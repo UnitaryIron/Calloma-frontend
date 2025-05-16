@@ -76,3 +76,44 @@ document.addEventListener('DOMContentLoaded', async () => {
     google.accounts.id.prompt();
   });
 });
+ document.addEventListener('DOMContentLoaded', () => {
+  // ... (your existing code)
+  
+  // Handle meeting link joining
+  document.getElementById('join-link-btn')?.addEventListener('click', joinViaLink);
+  
+  // Also allow pressing Enter in the input field
+  document.getElementById('meeting-link')?.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') joinViaLink();
+  });
+});
+
+function joinViaLink() {
+  const linkInput = document.getElementById('meeting-link');
+  const link = linkInput.value.trim();
+  
+  if (!link) {
+    alert('Please enter a meeting link');
+    return;
+  }
+
+  try {
+    // Extract room ID from URL
+    const url = new URL(link);
+    const roomId = url.searchParams.get('room');
+    
+    if (!roomId) {
+      throw new Error('Invalid meeting link');
+    }
+    
+    // Store username (you might want to prompt for this)
+    localStorage.setItem('username', 'Guest ' + Math.floor(Math.random() * 1000));
+    
+    // Redirect to the room
+    window.location.href = `room.html?room=${roomId}`;
+    
+  } catch (error) {
+    console.error('Error parsing meeting link:', error);
+    alert('Invalid meeting link format. Please check and try again.');
+  }
+}

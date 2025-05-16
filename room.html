@@ -19,6 +19,10 @@
       <button id="video-btn">🎥 Stop Video</button>
       <button id="share-btn">🖥️ Share Screen</button>
       <button id="leave-btn">🚪 Leave</button>
+      <!-- Add this button to your controls div in room.html -->
+<button id="copy-link-btn" class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600">
+  Copy Meeting Link
+</button>
     </div>
 
     <!-- Chat -->
@@ -42,7 +46,27 @@ if (!roomId) {
   window.location.href = 'index.html';
   throw new Error('No room ID provided');
 }
+// Add this to your room.js script
+document.getElementById('copy-link-btn')?.addEventListener('click', copyMeetingLink);
 
+function copyMeetingLink() {
+  const meetingLink = `${window.location.origin}${window.location.pathname}?room=${roomId}`;
+  
+  navigator.clipboard.writeText(meetingLink)
+    .then(() => {
+      // Show temporary feedback
+      const btn = document.getElementById('copy-link-btn');
+      const originalText = btn.textContent;
+      btn.textContent = 'Copied!';
+      setTimeout(() => {
+        btn.textContent = originalText;
+      }, 2000);
+    })
+    .catch(err => {
+      console.error('Failed to copy link:', err);
+      alert('Could not copy link. Please copy it manually from the address bar.');
+    });
+}
 // Rest of your room connection logic...
   </script>
 </body>

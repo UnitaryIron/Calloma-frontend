@@ -7,7 +7,7 @@ function initializeGoogleSignIn() {
   script.defer = true;
   script.onload = () => {
     google.accounts.id.initialize({
-      client_id: '1056893297604-vonoqltql1odccv0vh154dgl6mhmttl4.apps.googleusercontent.com',
+      client_id: '1056893297604-rq2ggi6mn3j0q18pjidq0iem3umpsuo6.apps.googleusercontent.com',
       callback: handleCredentialResponse
     });
   };

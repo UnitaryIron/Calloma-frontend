@@ -1,32 +1,36 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <title>VideoCall - Room</title>
-    <link rel="stylesheet" href="style.css" />
-  </head>
-  <body>
-    <div class="room-container">
-      <!-- Video Grid -->
-      <div class="video-grid" id="video-grid">
-        <video id="local-video" autoplay muted></video>
-      </div>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VideoCall - Room</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="room-container">
+    <!-- Video Grid -->
+    <div class="video-grid" id="video-grid">
+      <video id="local-video" autoplay muted playsinline></video>
+    </div>
 
-      <!-- Controls -->
-      <div class="controls">
-        <button id="mute-btn">🎤 Mute</button>
-        <button id="video-btn">🎥 Stop Video</button>
-        <button id="share-btn">🖥️ Share Screen</button>
-        <button id="leave-btn">🚪 Leave</button>
-      </div>
+    <!-- Controls -->
+    <div class="controls">
+      <button id="mute-btn">🎤 Mute</button>
+      <button id="video-btn">🎥 Stop Video</button>
+      <button id="share-btn">🖥️ Share Screen</button>
+      <button id="leave-btn">🚪 Leave</button>
+    </div>
 
-      <!-- Chat -->
-      <div class="chat-container">
-        <div class="messages" id="messages"></div>
-        <input type="text" id="chat-input" placeholder="Type a message..." />
+    <!-- Chat -->
+    <div class="chat-container">
+      <div class="messages" id="messages"></div>
+      <div class="chat-input-container">
+        <input type="text" id="chat-input" placeholder="Type a message...">
         <button id="send-btn">Send</button>
       </div>
     </div>
-    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
-    <script src="script.js"></script>
-  </body>
+  </div>
+  <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+  <script src="script.js"></script>
+</body>
 </html>

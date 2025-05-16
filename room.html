@@ -32,5 +32,18 @@
   </div>
   <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
   <script src="script.js"></script>
+  <script>
+    // At the start of your room.js script
+const urlParams = new URLSearchParams(window.location.search);
+const roomId = urlParams.get('room');
+
+if (!roomId) {
+  // If no room ID in URL, redirect back to home
+  window.location.href = 'index.html';
+  throw new Error('No room ID provided');
+}
+
+// Rest of your room connection logic...
+  </script>
 </body>
 </html>

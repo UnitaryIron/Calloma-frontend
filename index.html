@@ -1,18 +1,47 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <title>VideoCall - Join</title>
-    <link rel="stylesheet" href="style.css" />
-  </head>
-  <body>
-    <div class="join-container">
-      <h1>Join a Meeting</h1>
-      <form id="join-form">
-        <input type="text" id="username" placeholder="Your Name" required />
-        <input type="text" id="room-id" placeholder="Room ID" required />
-        <button type="submit">Join Room</button>
-      </form>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calloma - Secure Video Conferencing</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+</head>
+<body class="bg-gray-50">
+  <!-- Header -->
+  <header class="bg-white shadow-sm">
+    <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+      <h1 class="text-xl font-bold text-blue-600">Calloma</h1>
+      <nav>
+        <a href="#" class="px-3 hover:text-blue-500">Features</a>
+        <a href="#" class="px-3 hover:text-blue-500">Pricing</a>
+        <a href="#" class="px-3 hover:text-blue-500">Privacy</a>
+        <button id="signin-btn" class="ml-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+          Sign In
+        </button>
+      </nav>
     </div>
-    <script src="script.js"></script>
-  </body>
+  </header>
+
+  <!-- Hero Section -->
+  <main class="container mx-auto px-4 py-16 text-center">
+    <h2 class="text-4xl font-bold mb-6">Secure Video Meetings Made Simple</h2>
+    <p class="text-xl mb-8 max-w-2xl mx-auto">
+      High-quality video conferencing with end-to-end encryption and no time limits.
+    </p>
+    <div class="max-w-md mx-auto bg-white p-8 rounded-lg shadow-md">
+      <div id="signin-form" class="hidden">
+        <div class="g-recaptcha mb-4" data-sitekey="YOUR_RECAPTCHA_SITE_KEY"></div>
+        <button id="google-signin" class="w-full bg-red-500 text-white p-2 rounded mb-4">
+          Sign in with Google
+        </button>
+      </div>
+      <button id="get-started" class="w-full bg-blue-500 text-white p-2 rounded">
+        Get Started for Free
+      </button>
+    </div>
+  </main>
+
+  <script src="script.js"></script>
+</body>
 </html>

@@ -1,11 +1,6 @@
 if (window.location.pathname.includes("room.html")) {
-  const socket = io("https://calloma-backend-production.up.railway.app", {
-    transports: ['websocket'],
-    reconnectionAttempts: 5,
-    reconnectionDelay: 1000
-  });
 
- const socket = io("https://calloma-backend-production.up.railway.app");
+const socket = io("https://calloma-backend-production.up.railway.app");
 const roomId = new URLSearchParams(window.location.search).get('room');
 const videoGrid = document.getElementById('video-grid');
 const localVideo = document.getElementById('local-video');

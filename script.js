@@ -15,6 +15,13 @@ if (window.location.pathname.includes("room.html")) {
   let localStream;
   let isScreenSharing = false;
 
+  // Validate room ID
+  if (!roomId) {
+    alert("Room ID is missing from URL");
+    window.location.href = "index.html";
+    throw new Error("Missing room ID");
+  }
+
   // Initialize the room
   async function initRoom() {
     try {
@@ -22,6 +29,9 @@ if (window.location.pathname.includes("room.html")) {
       localStream = await navigator.mediaDevices.getUserMedia({ 
         video: true, 
         audio: true 
+      }).catch(err => {
+        console.error("Media access error:", err);
+        throw new Error("Could not access camera/microphone. Please check permissions.");
       });
       
       localVideo.srcObject = localStream;
@@ -31,8 +41,9 @@ if (window.location.pathname.includes("room.html")) {
       setupSocketEvents();
       
     } catch (error) {
-      console.error("Error accessing media devices:", error);
-      alert("Could not access camera/microphone. Please check permissions.");
+      console.error("Error initializing room:", error);
+      alert(error.message || "Failed to initialize room");
+      window.location.href = "index.html";
     }
   }
 
@@ -53,14 +64,32 @@ if (window.location.pathname.includes("room.html")) {
 
   // Set up socket.io events
   function setupSocketEvents() {
+    // Connection status
+    socket.on("connect_error", (err) => {
+      console.error("Connection error:", err);
+      alert("Failed to connect to server. Trying to reconnect...");
+    });
+
     // Handle new users
     socket.on("user-connected", userId => {
+      console.log("User connected:", userId);
       if (userId === socket.id) return;
       createPeerConnection(userId, localStream);
     });
 
+    // Get existing users when joining
+    socket.on("existing-users", (userIds) => {
+      console.log("Existing users:", userIds);
+      userIds.forEach(userId => {
+        if (userId !== socket.id && !peerConnections[userId]) {
+          createPeerConnection(userId, localStream);
+        }
+      });
+    });
+
     // Handle signaling
     socket.on("signal", (fromId, signal) => {
+      console.log("Received signal from", fromId, "type:", signal.type || "candidate");
       if (!peerConnections[fromId]) {
         createPeerConnection(fromId, localStream);
       }
@@ -76,6 +105,7 @@ if (window.location.pathname.includes("room.html")) {
 
     // Handle user disconnect
     socket.on("user-disconnected", userId => {
+      console.log("User disconnected:", userId);
       removeRemoteVideo(userId);
     });
 
@@ -87,10 +117,16 @@ if (window.location.pathname.includes("room.html")) {
 
   // Create peer connection
   function createPeerConnection(userId, stream) {
+    console.log("Creating peer connection with", userId);
     const peer = new RTCPeerConnection({
       iceServers: [
         { urls: "stun:stun.l.google.com:19302" },
         // Add your TURN server here if needed
+        // { 
+        //   urls: "turn:your-turn-server.com",
+        //   username: "username",
+        //   credential: "password"
+        // }
       ]
     });
     
@@ -104,31 +140,54 @@ if (window.location.pathname.includes("room.html")) {
     // ICE Candidate handling
     peer.onicecandidate = (e) => {
       if (e.candidate) {
+        console.log("Sending ICE candidate to", userId);
         socket.emit("signal", userId, { candidate: e.candidate });
       }
     };
 
     // Handle remote stream
     peer.ontrack = (e) => {
+      console.log("Received remote stream from", userId);
       addRemoteVideo(userId, e.streams[0]);
     };
 
     // Connection state changes
     peer.onconnectionstatechange = () => {
+      console.log(`Connection state with ${userId}:`, peer.connectionState);
       if (peer.connectionState === "disconnected") {
         removeRemoteVideo(userId);
       }
     };
+
+    // For the initiator, create an offer
+    if (userId !== socket.id) {
+      createOffer(userId);
+    }
+  }
+
+  // Create offer
+  async function createOffer(userId) {
+    const peer = peerConnections[userId];
+    try {
+      const offer = await peer.createOffer();
+      await peer.setLocalDescription(offer);
+      console.log("Sending offer to", userId);
+      socket.emit("signal", userId, { type: "offer", offer: peer.localDescription });
+    } catch (error) {
+      console.error("Error creating offer:", error);
+    }
   }
 
   // Handle incoming offers
   async function handleOffer(fromId, offer) {
+    console.log("Handling offer from", fromId);
     const peer = peerConnections[fromId] || createPeerConnection(fromId, localStream);
     
     try {
       await peer.setRemoteDescription(new RTCSessionDescription(offer));
       const answer = await peer.createAnswer();
       await peer.setLocalDescription(answer);
+      console.log("Sending answer to", fromId);
       socket.emit("signal", fromId, { type: "answer", answer: peer.localDescription });
     } catch (error) {
       console.error("Error handling offer:", error);
@@ -137,6 +196,7 @@ if (window.location.pathname.includes("room.html")) {
 
   // Handle answers
   async function handleAnswer(fromId, answer) {
+    console.log("Handling answer from", fromId);
     const peer = peerConnections[fromId];
     if (peer) {
       try {
@@ -149,6 +209,7 @@ if (window.location.pathname.includes("room.html")) {
 
   // Handle ICE candidates
   async function handleCandidate(fromId, candidate) {
+    console.log("Handling ICE candidate from", fromId);
     const peer = peerConnections[fromId];
     if (peer) {
       try {
@@ -161,6 +222,7 @@ if (window.location.pathname.includes("room.html")) {
 
   // Add remote video element
   function addRemoteVideo(userId, stream) {
+    console.log("Adding remote video for", userId);
     // Remove existing video if any
     removeRemoteVideo(userId);
     
@@ -174,6 +236,7 @@ if (window.location.pathname.includes("room.html")) {
 
   // Remove remote video element
   function removeRemoteVideo(userId) {
+    console.log("Removing remote video for", userId);
     const videoEl = document.getElementById(`remote-${userId}`);
     if (videoEl) {
       videoEl.srcObject?.getTracks()?.forEach(track => track.stop());
@@ -255,7 +318,9 @@ if (window.location.pathname.includes("room.html")) {
 
   function leaveRoom() {
     // Stop all tracks
-    localStream.getTracks().forEach(track => track.stop());
+    if (localStream) {
+      localStream.getTracks().forEach(track => track.stop());
+    }
     
     // Close all peer connections
     Object.values(peerConnections).forEach(peer => peer.close());
